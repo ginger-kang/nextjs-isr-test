@@ -1,40 +1,47 @@
 import * as React from 'react'
 import type {GetStaticPaths, GetStaticProps, GetStaticPropsContext } from 'next'
-import { Md5 } from 'ts-md5/dist/md5'
 import { useRouter } from 'next/dist/client/router'
+import Identicon from 'identicon.js'
+import { hashGeneratorHelper } from '../src/utils/hashGeneratorHelper'
 
 interface Props {
-  hex: string
+  identicon: string
 }
 
-const Random = ({ hex }: Props) => {
+const Random = ({ identicon }: Props) => {
   const router = useRouter()
 
   if (router.isFallback) {
     return <div>Loading...</div>
   }
 
+  const icon = `data:image/png;base64,${identicon}`
+
   return (
     <>
-      <div>{hex}</div>
+      <img src={icon} alt="icon"/>
     </>
   )
 }
 
-export const getStaticProps: GetStaticProps = async (ctx: GetStaticPropsContext) => {
-  const id = ctx?.params?.id as string
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const id = params.id as string
+
+  const identicon = new Identicon(id).toString()
 
   return {
     props: {
-      hex: Md5.hashStr(id)
-    }
+      identicon
+    },
+    revalidate: 60
   }
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const ids = Array.from({ length: 10 }, (_, i) => i + 1)
-  const paths = ids.map((id) => {
-    return { params: { id: id.toString() } }
+  const hashs = hashGeneratorHelper(15, 10000)
+
+  const paths = hashs.map((hash) => {
+    return { params: { id: hash } }
   })
 
   return {
