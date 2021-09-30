@@ -1,11 +1,16 @@
 import createHash from 'hash-generator'
 
-export function hashGeneratorHelper(length, count) {
-    let hashs = []
-    
-    for (let i = 0; i < count; i++) {
-        hashs.push(createHash(length))
-    }
+interface Props {
+  length: number
+  count: number
+}
 
-    return hashs
+export function hashGeneratorHelper({ length, count }: Props): string[] {
+  let hashs: string[] = []
+
+  for (let i = 0; i < count; i++) {
+    hashs.push(createHash(length))
+  }
+
+  return hashs
 }

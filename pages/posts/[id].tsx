@@ -1,25 +1,25 @@
 import * as React from 'react'
-import type {GetStaticPaths, GetStaticProps, GetStaticPropsContext } from 'next'
+import type { GetStaticPaths, GetStaticProps } from 'next'
 import { useRouter } from 'next/dist/client/router'
 import Identicon from 'identicon.js'
-import { hashGeneratorHelper } from '../src/utils/hashGeneratorHelper'
+import { hashGeneratorHelper } from '../../src/utils/hashGeneratorHelper'
+import Post from '../../src/components/Post'
 
 interface Props {
+  id: string
   identicon: string
 }
 
-const Random = ({ identicon }: Props) => {
+const Posts = ({ id, identicon }: Props) => {
   const router = useRouter()
 
   if (router.isFallback) {
     return <div>Loading...</div>
   }
 
-  const icon = `data:image/png;base64,${identicon}`
-
   return (
     <>
-      <img src={icon} alt="icon"/>
+      <Post identicon={identicon} id={id} />
     </>
   )
 }
@@ -27,20 +27,23 @@ const Random = ({ identicon }: Props) => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const id = params.id as string
 
-  const identicon = new Identicon(id).toString()
+  const identicon: string = new Identicon(id, { size: 200 }).toString()
+
+  await new Promise(res => setTimeout(res, 1000))
 
   return {
     props: {
-      identicon
+      id,
+      identicon,
     },
-    revalidate: 60
+    revalidate: 60,
   }
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const hashs = hashGeneratorHelper(15, 10000)
+  const hashs: string[] = hashGeneratorHelper({ length: 15, count: 10 })
 
-  const paths = hashs.map((hash) => {
+  const paths = hashs.map(hash => {
     return { params: { id: hash } }
   })
 
@@ -50,4 +53,4 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }
 }
 
-export default Random
+export default Posts
